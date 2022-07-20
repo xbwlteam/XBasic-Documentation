@@ -1,0 +1,91 @@
+XBSqlite3Notes.txt
+
+	Contents
+		Introduction
+		Compilation and Integration
+		Building a Standalone XBSqlite Program
+
+<h1>Introduction
+	The sqlite3 library of functions is a fully featured relational database system written in C.
+	It is very widely used and well documented and will run on both Linux and Windows systems.
+	Binaries or Source Code can be downloaded from the sqlite site.
+
+	This document provides a description of the method for compiling and using the sqlite3 database
+	system.
+
+<h1>Compilation and Integration
+	Obtain the source code for Linux from the sqlite website.
+
+	In the XBasic download directory, add the directory src/sqlite
+
+	Copy the sqlite3 source files to this directory
+		sqlite3.c
+		sqlite3.h
+		sqlite3ext.h
+
+	Obtain the file sqlite3.dec from the XBasic GitHub site xbwlteam. Add this to
+	the src/sqlite directory
+
+	Using the Linux terminal go to the src/sqlite directory and compile the sqlite3
+	source to assembler using
+		gcc -S -m32 -fverbose-asm sqlite3.c
+
+	Using a text editor, modify the XBasic file src/Makefile as follows:
+
+	override CFLAGS += -no-pie -Wall -m32
+	TO
+	override CFLAGS += -no-pie -Wall -m32 -pthread
+
+	LDFLAGS = /lib/ld-linux.so.2 
+	TO
+	LDFLAGS = /lib/ld-linux.so.2 -pthread
+
+	After the else for linux code and
+	OBJS =
+	Add
+	sqlite/sqlite3.s	\
+	You can put this at the end of the list if you like.
+
+	Save the Makefile. Then on the terminal go to the XBasic download directory and type
+	make
+	THEN
+	sudo make install
+
+	This integrates sqlite3 with XBasic and enables you to run and test programs with
+	sqlite3 function calls in the PDE.
+
+	In the XBasic program Prolog include the line
+	IMPORT "sqlite3"
+
+	For an example program obtain TestSqlite.x from the XBasic GitHub site.
+
+	You should familiarise yourself with C pointers to enable easy use of the
+	sqlite3 functions.
+
+<h1>Building a Standalone XBSqlite Program
+	Compile the sqlite3.c source to object code on the linux terminal with
+		gcc -c -m32 -pthread sqlite3.c
+
+	Copy the object file sqlite3.o to the /usr/xb/lib directory
+
+	Copy the sqlite3.dec file to the /usr/xb/include directory
+
+	If you have not already done so, install linux sqlite3 as follows:
+		sudo apt-get install sqlite3
+
+	Create the libsqlite3.so file as follows
+		cd /usr/lib/i386-linux-gnu
+		sudo ln -s libsqlite3.so.0.8.6 libsqlite3.so
+
+	In the XBasic PDE, set-up the make file (for your program) MyProg.mak by using the Run/Assembler option
+
+	Edit MyProg.mak as follows
+		CFLAGS		= -g -Wall -m32
+	TO
+		CFLAGS		= -g -Wall -m32 -no-pie -pthread
+
+	On the linux terminal, generate your standalone program by using
+		make -f MyProg.mak
+
+	Run the program from the linux terminal by using
+		./MyProg
